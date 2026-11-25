@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לו"ז אימוני כדורגל שבועי | מערכת משפחתית</title>
+    <!-- טעינת Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- טעינת גופן Heebo / Rubik לתמיכה מיטבית בעברית -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- אייקונים מ-Lucide -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- html2canvas לשמירת הלוח כתמונה נקייה -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Rubik', 'Heebo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+        }
+        .training-card {
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        .training-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.1);
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-emerald-200 selection:text-emerald-950">
+
+    <!-- סרגל עליון (Header) -->
+    <header class="bg-gradient-to-l from-emerald-800 via-emerald-700 to-teal-800 text-white shadow-md sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+            <!-- לוגו וכותרת -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/25 shadow-inner shrink-0">
+                    <span class="text-2xl">⚽</span>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold tracking-tight flex items-center gap-2 flex-wrap">
+                        לו"ז אימוני כדורגל
+                        <span id="shared-badge" class="hidden text-xs bg-amber-400 text-amber-950 font-bold px-2.5 py-0.5 rounded-full">תצוגת משפחה</span>
+                        <span id="sync-status" class="text-[11px] bg-white/15 text-emerald-100 font-medium px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                            מתחבר...
+                        </span>
+                    </h1>
+                    <p class="text-xs text-emerald-100 hidden sm:block">ניהול, פענוח ושיתוף אימונים שבועי • הגעה 30 דק' לפני</p>
+                </div>
+            </div>
+
+            <!-- כפתורי פעולה מהירים -->
+            <div class="flex items-center gap-2 flex-wrap no-print">
+                <button id="toggle-editor-btn" onclick="toggleEditorMode()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-sm font-medium transition border border-white/20">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                    <span id="toggle-editor-text">תצוגת משפחה</span>
+                </button>
+
+                <button onclick="downloadScheduleImage()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-sm font-medium transition border border-white/20">
+                    <i data-lucide="image-down" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">שמור כתמונה</span>
+                    <span class="sm:hidden">תמונה</span>
+                </button>
+                
+                <button onclick="copyWhatsAppSummary()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-sm font-bold transition shadow-sm">
+                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                    <span class="hidden sm:inline">העתק לוואטסאפ</span>
+                    <span class="sm:hidden">וואטסאפ</span>
+                </button>
+
+                <button onclick="shareScheduleLink()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 text-sm font-bold transition shadow-sm">
+                    <i data-lucide="link" class="w-4 h-4"></i>
+                    <span>העתק קישור קבוע למשפחה</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- תוכן ראשי -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- אזור עריכה והזנת טקסט (ניתן להסתרה במצב משפחה) -->
+        <section id="editor-panel" class="bg-white rounded-2xl p-4 sm:p-6 card-shadow border border-slate-200/80 transition-all no-print">
+            <div class="flex flex-col lg:flex-row gap-6">
+                
+                <!-- צד ימין: הדבקת הודעת מאמן ופענוח -->
+                <div class="flex-1 space-y-3">
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <label for="raw-text-input" class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-emerald-600"></i>
+                            הדבקת הודעת מאמן (וואטסאפ / טקסט חופשי)
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <button onclick="loadSampleText()" class="text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2.5 py-1.5 rounded-lg border border-emerald-200 transition flex items-center gap-1">
+                                <i data-lucide="file-text" class="w-3.5 h-3.5"></i>
+                                טען דוגמה
+                            </button>
+                            <button onclick="clearInputText()" class="text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 px-2 py-1.5 rounded-lg transition">
+                                נקה
+                            </button>
+                        </div>
+                    </div>
+
+                    <textarea id="raw-text-input" rows="5" 
+                        class="w-full rounded-xl border border-slate-300 p-3.5 text-sm text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-slate-50/50 placeholder:text-slate-400 leading-relaxed"
+                        placeholder="הדביקי כאן את הודעת האימונים השבועית... לדוגמה:
+2011
+יום ראשון 17:30 מגרש סינטטי
+יום שלישי 18:00 אצטדיון עירוני
+
+2010
+יום שני 19:00 מגרש סינטטי
+יום רביעי 18:30 אצטדיון עירוני"></textarea>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-1">
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <i data-lucide="info" class="w-4 h-4 text-slate-400 shrink-0"></i>
+                            <span>המערכת מחשבת אוטומטית <strong>שעה וחצי</strong> אימון ו<strong>חצי שעה</strong> הגעה מראש.</span>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                            <button onclick="parseAndBuild(true)" class="flex-1 sm:flex-initial justify-center flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-semibold transition">
+                                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                הוסף לקיים
+                            </button>
+                            <button onclick="parseAndBuild(false)" class="flex-1 sm:flex-initial justify-center flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold shadow-sm transition">
+                                <i data-lucide="wand-2" class="w-4 h-4"></i>
+                                עדכן לוח שבועי
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- קו מפריד -->
+                <div class="hidden lg:block w-px bg-slate-200"></div>
+
+                <!-- צד שמאל: הגדרות שבוע ופעולות ניהול -->
+                <div class="lg:w-80 flex flex-col justify-between space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200/70">
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                            <i data-lucide="calendar-cog" class="w-4 h-4 text-emerald-600"></i>
+                            הגדרות לוח שבועי
+                        </h3>
+                        <div>
+                            <label for="week-title-input" class="block text-xs font-medium text-slate-600 mb-1">כותרת השבוע (תוצג למשפחה)</label>
+                            <input type="text" id="week-title-input" oninput="updateWeekTitle(this.value)"
+                                class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-800 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                placeholder="למשל: לו״ז אימונים - שבוע 24.11">
+                        </div>
+                        <div>
+                            <label for="family-board-id-input" class="block text-xs font-medium text-slate-600 mb-1">מזהה לוח משפחתי קבוע</label>
+                            <input type="text" id="family-board-id-input" dir="ltr" onchange="updateScheduleDocId(this.value)"
+                                class="w-full rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-mono text-slate-800 bg-white focus:ring-2 focus:ring-emerald-500 outline-none"
+                                placeholder="main_family_schedule">
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2 border-t border-slate-200">
+                        <button onclick="openAddModal()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 text-sm font-semibold transition shadow-2xs">
+                            <i data-lucide="plus" class="w-4 h-4 text-emerald-600"></i>
+                            הוסף אימון ידנית
+                        </button>
+                        <button onclick="confirmClearSchedule()" class="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 text-xs font-medium transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            אפס את כל הלוח השבועי
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- אזור לכידה לתמונה נקייה למשפחה -->
+        <div id="capture-area" class="space-y-4 bg-[#f8fafc] p-1 sm:p-2 rounded-2xl">
+            <!-- כותרת המערכת השבועית + מקרא צבעים -->
+            <section class="bg-white rounded-2xl p-4 sm:p-5 card-shadow border border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-0.5">
+                        <i data-lucide="calendar-days" class="w-4 h-4"></i>
+                        <span>תוכנית שבועית מעודכנת</span>
+                    </div>
+                    <h2 id="display-week-title" class="text-xl sm:text-2xl font-extrabold text-slate-900">לו"ז אימונים שבועי</h2>
+                </div>
+
+                <!-- מקרא שנתונים -->
+                <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 bg-slate-50 px-3.5 py-2.5 rounded-xl border border-slate-200/80">
+                    <span class="text-xs font-semibold text-slate-500 ml-1">מקרא שנתונים:</span>
+                    
+                    <div class="flex items-center gap-1.5 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-blue-600 inline-block"></span>
+                        <span class="text-xs font-bold text-blue-900">שנתון 2010</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-orange-50 border border-orange-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-orange-500 inline-block"></span>
+                        <span class="text-xs font-bold text-orange-900">שנתון 2011</span>
+                    </div>
+
+                    <div class="flex items-center gap-1.5 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                        <span class="w-3 h-3 rounded-full bg-slate-400 inline-block"></span>
+                        <span class="text-xs font-medium text-slate-700">כללי / לא צוין</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- סיכום מהיר / פילטר שנתונים + בורר תצוגה (גריד / רשימה) -->
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs">
+                        <button onclick="setFilter('all')" id="filter-all" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition">הכל (<span id="count-all">0</span>)</button>
+                        <button onclick="setFilter('2010')" id="filter-2010" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 hover:bg-blue-50 transition">🔵 2010 (<span id="count-2010">0</span>)</button>
+                        <button onclick="setFilter('2011')" id="filter-2011" class="filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-orange-700 hover:bg-orange-50 transition">🟠 2011 (<span id="count-2011">0</span>)</button>
+                    </div>
+
+                    <!-- החלפה בין תצוגת ימים (גריד) לתצוגת רשימה כרונולוגית -->
+                    <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-2xs no-print">
+                        <button onclick="setViewLayout('grid')" id="layout-grid" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition flex items-center gap-1">
+                            <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                            <span>ימים</span>
+                        </button>
+                        <button onclick="setViewLayout('list')" id="layout-list" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-1">
+                            <i data-lucide="list" class="w-3.5 h-3.5"></i>
+                            <span>רשימה</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-xs text-slate-500 flex items-center gap-1.5">
+                    <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i>
+                    <span>שעת ההגעה המודגשת היא <strong>30 דקות לפני</strong> תחילת האימון</span>
+                </div>
+            </div>
+
+            <!-- גריד המערכת השבועית (ראשון עד שבת) -->
+            <section id="weekly-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3.5 pb-4">
+                <!-- העמודות ירונדרו כאן דינמית באמצעות JS -->
+            </section>
+
+            <!-- תצוגת רשימה כרונולוגית -->
+            <section id="weekly-list" class="hidden flex-col gap-3 pb-4">
+                <!-- הרשימה תרונדר כאן דינמית באמצעות JS -->
+            </section>
+        </div>
+
+    </main>
+
+    <!-- מודאל הוספה / עריכה של אימון בודד -->
+    <div id="session-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 id="modal-title" class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="calendar-plus" class="w-5 h-5 text-emerald-600"></i>
+                    הוספת אימון חדש
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="session-form" onsubmit="saveModalSession(event)" class="space-y-4">
+                <input type="hidden" id="edit-id">
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">יום בשבוע</label>
+                        <select id="edit-day" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-medium bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="0">יום ראשון</option>
+                            <option value="1">יום שני</option>
+                            <option value="2">יום שלישי</option>
+                            <option value="3">יום רביעי</option>
+                            <option value="4">יום חמישי</option>
+                            <option value="5">יום שישי</option>
+                            <option value="6">שבת</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">שנתון</label>
+                        <select id="edit-cohort" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm font-bold bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                            <option value="2010">🔵 שנתון 2010</option>
+                            <option value="2011">🟠 שנתון 2011</option>
+                            <option value="general">⚪ כללי / משותף</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">שעת התחלה</label>
+                        <input type="time" id="edit-start" required onchange="autoCalculateEndTime()"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">שעת סיום (ברירת מחדל: שעה וחצי)</label>
+                        <input type="time" id="edit-end" required
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl px-3.5 py-2 flex items-center justify-between text-xs">
+                    <span class="font-semibold text-amber-900">⏰ שעת הגעה מומלצת (חצי שעה לפני):</span>
+                    <span id="modal-arrival-preview" class="font-extrabold text-amber-950 text-sm">--:--</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">מיקום / מגרש</label>
+                    <input type="text" id="edit-location" required placeholder="למשל: מגרש סינטטי / אצטדיון עירוני"
+                        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">סוג פעילות</label>
+                        <input type="text" id="edit-type" placeholder="אימון / משחק" value="אימון"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">הסעה / הערה למשפחה</label>
+                        <input type="text" id="edit-note" placeholder="למשל: אבא מסיע"
+                            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-emerald-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                        ביטול
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+                        שמור אימון
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- מודאל אישור איפוס לוח (תחליף מותאם ל-confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center gap-3 text-rose-600">
+                <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900">איפוס הלוח השבועי</h3>
+            </div>
+            <p class="text-sm text-slate-600 leading-relaxed">האם את בטוחה שברצונך למחוק את כל האימונים מהלוח השבועי? פעולה זו תעדכן גם את התצוגה אצל המשפחה.</p>
+            <div class="flex items-center justify-end gap-2 pt-2">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-100 transition">
+                    ביטול
+                </button>
+                <button onclick="executeClearSchedule()" class="px-4 py-2 rounded-xl text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white transition">
+                    כן, אפס לוח
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- הודעות צפות (Toast) -->
+    <div id="toast-container" class="fixed bottom-5 left-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- מודאל פרטי קישור שיתוף למשפחה -->
+    <div id="share-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="share-2" class="w-5 h-5 text-emerald-600"></i>
+                    שיתוף הלוח למשפחה
+                </h3>
+                <button onclick="closeShareModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="share-environment-warning" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-950 leading-relaxed space-y-1">
+                <p class="font-bold">⚠️ שימי לב: האפליקציה פועלת כעת בתצוגה מקדימה פנימית</p>
+                <p>כתובת תצוגה מקדימה פנימית אינה נגישה מבחוץ לבני המשפחה. כדי שבני המשפחה יוכלו לפתוח קישור מכל מכשיר, יש להעלות את הקובץ לשרת/אירוח ציבורי (או לשלוח להם את הסיכום לוואטסאפ / תמונה).</p>
+            </div>
+
+            <div>
+                <label for="share-link-input" class="block text-xs font-bold text-slate-700 mb-1.5">קישור הלוח</label>
+                <div class="flex items-center gap-2">
+                    <input id="share-link-input" type="text" readonly dir="ltr"
+                        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2.5 text-xs font-mono text-slate-800 outline-none">
+                    <button onclick="copyShareModalInput()" class="px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 transition">
+                        העתק
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                <button id="native-share-btn" onclick="triggerNativeShare()" class="hidden items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition">
+                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                    <span>שיתוף מהמכשיר</span>
+                </button>
+                <button onclick="closeShareModal()" class="mr-auto px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 transition">
+                    סגור
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ייבוא מודולי Firebase לסנכרון ענן בזמן אמת
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ==========================================
+        // הגדרות ומבנה נתונים מרכזי
+        // ==========================================
+        const DAYS_HEB = [
+            { index: 0, name: 'ראשון', short: "א'" },
+            { index: 1, name: 'שני', short: "ב'" },
+            { index: 2, name: 'שלישי', short: "ג'" },
+            { index: 3, name: 'רביעי', short: "ד'" },
+            { index: 4, name: 'חמישי', short: "ה'" },
+            { index: 5, name: 'שישי', short: "ו'" },
+            { index: 6, name: 'שבת', short: "ש'" }
+        ];
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'football-family-app';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+        let scheduleDocId = 'main_family_schedule';
+        let unsubscribeSnapshot = null;
+        const LOCAL_STORAGE_KEY = 'football_family_schedule_v1';
+
+        let appState = {
+            weekTitle: '',
+            sessions: [],
+            filter: 'all',
+            viewLayout: 'grid', // 'grid' | 'list'
+            isEditorVisible: true,
+            isSharedView: false
+        };
+
+        // ==========================================
+        // אתחול האפליקציה וסנכרון Firestore
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            initDefaultTitle();
+            parseUrlParameters();
+            loadFromLocalStorage();
+            syncBoardIdInput();
+            renderAll();
+            if (window.lucide) lucide.createIcons();
+            await initFirebaseCloudSync();
+        });
+
+        function syncBoardIdInput() {
+            const input = document.getElementById('family-board-id-input');
+            if (input) {
+                input.value = scheduleDocId;
+            }
+        }
+
+        function updateScheduleDocId(rawId) {
+            const cleaned = String(rawId || '')
+                .trim()
+                .replace(/[^a-zA-Z0-9_-]/g, '_')
+                .replace(/_+/g, '_')
+                .substring(0, 40);
+
+            if (cleaned.length < 3) {
+                showToast('מזהה הלוח צריך להכיל לפחות 3 תווים (אותיות אנגליות, מספרים, מקף או קו תחתון).', 'warning');
+                syncBoardIdInput();
+                return;
+            }
+
+            scheduleDocId = cleaned;
+            syncBoardIdInput();
+            loadFromLocalStorage();
+            renderAll();
+            if (db && currentUser) {
+                subscribeToSharedSchedule();
+                saveScheduleToCloud();
+            }
+            showToast(`הלוח המשפחתי עבר למזהה: ${scheduleDocId}`, 'success');
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const storageKey = `${LOCAL_STORAGE_KEY}_${scheduleDocId}`;
+                const raw = window.localStorage.getItem(storageKey) || window.localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') {
+                    if (parsed.weekTitle) appState.weekTitle = parsed.weekTitle;
+                    if (Array.isArray(parsed.sessions)) appState.sessions = parsed.sessions;
+                }
+            } catch (err) {
+                console.warn('לא ניתן לקרוא נתונים מקומיים:', err);
+            }
+        }
+
+        function saveToLocalStorage() {
+            try {
+                const payload = JSON.stringify({
+                    weekTitle: appState.weekTitle,
+                    sessions: appState.sessions,
+                    updatedAt: Date.now()
+                });
+                window.localStorage.setItem(`${LOCAL_STORAGE_KEY}_${scheduleDocId}`, payload);
+                window.localStorage.setItem(LOCAL_STORAGE_KEY, payload);
+            } catch (err) {
+                console.warn('לא ניתן לשמור נתונים מקומיים:', err);
+            }
+        }
+
+        function initDefaultTitle() {
+            const today = new Date();
+            const dayOfWeek = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - dayOfWeek);
+            const dd = String(sunday.getDate()).padStart(2, '0');
+            const mm = String(sunday.getMonth() + 1).padStart(2, '0');
+            appState.weekTitle = `לו"ז אימונים - שבוע ${dd}.${mm}`;
+        }
+
+        function parseUrlParameters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            const docParam = urlParams.get('id');
+
+            if (docParam && /^[a-zA-Z0-9_-]{3,40}$/.test(docParam)) {
+                scheduleDocId = docParam;
+            }
+
+            if (viewParam === 'family') {
+                appState.isSharedView = true;
+                appState.isEditorVisible = false;
+            }
+        }
+
+        function hasCloudConfig() {
+            return typeof __firebase_config !== 'undefined' && Boolean(__firebase_config);
+        }
+
+        async function initFirebaseCloudSync() {
+            try {
+                if (!hasCloudConfig()) {
+                    updateSyncBadge('גיבוי מקומי בלבד', 'bg-amber-400');
+                    return;
+                }
+
+                const firebaseConfig = typeof __firebase_config === 'string'
+                    ? JSON.parse(__firebase_config)
+                    : __firebase_config;
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // חובה לבצע אימות לפני גישה ל-Firestore
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = cred.user;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
+                }
+
+                subscribeToSharedSchedule();
+            } catch (error) {
+                console.error('שגיאה בחיבור לענן:', error);
+                updateSyncBadge('שגיאת סנכרון', 'bg-rose-400');
+                showToast('לא ניתן להתחבר לענן כרגע. נשמר גיבוי מקומי בדפדפן.', 'error');
+            }
+        }
+
+        function subscribeToSharedSchedule() {
+            if (!db || !currentUser) return;
+
+            if (unsubscribeSnapshot) {
+                unsubscribeSnapshot();
+            }
+
+            // נתיב ציבורי משותף למשפחה לפי כלל 1
+            const scheduleRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', scheduleDocId);
+
+            unsubscribeSnapshot = onSnapshot(scheduleRef, (docSnap) => {
+                updateSyncBadge('מסונכרן לענן', 'bg-emerald-300');
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.weekTitle) {
+                        appState.weekTitle = data.weekTitle;
+                    }
+                    if (Array.isArray(data.sessions)) {
+                        appState.sessions = data.sessions;
+                    }
+                    renderAll();
+                } else if (!appState.isSharedView && appState.sessions.length === 0) {
+                    saveScheduleToCloud();
+                }
+            }, (error) => {
+                console.error('שגיאה בהאזנה לעדכוני הלוח:', error);
+                updateSyncBadge('מנותק', 'bg-rose-400');
+            });
+        }
+
+        async function saveScheduleToCloud() {
+            saveToLocalStorage();
+            if (!db || !currentUser) return;
+
+            updateSyncBadge('שומר...', 'bg-amber-300');
+            try {
+                const scheduleRef = doc(db, 'artifacts', appId, 'public', 'data', 'schedules', scheduleDocId);
+                await setDoc(scheduleRef, {
+                    weekTitle: appState.weekTitle,
+                    sessions: appState.sessions,
+                    updatedAt: Date.now()
+                });
+                updateSyncBadge('מסונכרן לענן', 'bg-emerald-300');
+            } catch (error) {
+                console.error('שגיאה בשמירה לענן:', error);
+                updateSyncBadge('שגיאת שמירה', 'bg-rose-400');
+                showToast('שגיאה בשמירת הנתונים לענן.', 'error');
+            }
+        }
+
+        function updateSyncBadge(text, dotColorClass) {
+            const badge = document.getElementById('sync-status');
+            if (!badge) return;
+            badge.innerHTML = `
+                <span class="w-1.5 h-1.5 rounded-full ${dotColorClass}"></span>
+                <span>${text}</span>
+            `;
+        }
+
+        // ==========================================
+        // חישובי זמנים (שעה וחצי אימון, חצי שעה הגעה)
+        // ==========================================
+        function timeToMinutes(timeStr) {
+            if (!timeStr || !timeStr.includes(':')) return 0;
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        function minutesToTime(totalMinutes) {
+            let mins = ((totalMinutes % 1440) + 1440) % 1440;
+            const h = Math.floor(mins / 60);
+            const m = mins % 60;
+            return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        }
+
+        function addMinutesToTime(timeStr, deltaMinutes) {
+            return minutesToTime(timeToMinutes(timeStr) + deltaMinutes);
+        }
+
+        function calculateArrivalTime(startTime) {
+            return addMinutesToTime(startTime, -30);
+        }
+
+        function calculateDefaultEndTime(startTime) {
+            return addMinutesToTime(startTime, 90);
+        }
+
+        // ==========================================
+        // מנוע פענוח טקסט חופשי (תומך בכותרות 2011 / 2010)
+        // ==========================================
+        function parseAndBuild(append = false) {
+            const rawText = document.getElementById('raw-text-input').value.trim();
+            if (!rawText) {
+                showToast('אנא הדביקי טקסט עם מועדי אימונים לפני הפענוח.', 'warning');
+                return;
+            }
+
+            const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+            const parsedSessions = [];
+            let currentDay = null;
+            let activeCohort = null;
+
+            const firstLineHasTime = /\b([01]?\d|2[0-3]):[0-5]\d\b/.test(lines[0]);
+            const firstLineHasCohort = /\b201[01]\b/.test(lines[0]);
+            if (!firstLineHasTime && !firstLineHasCohort && lines[0].includes('שבוע')) {
+                appState.weekTitle = lines[0].replace(/[:*]/g, '').trim();
+                document.getElementById('week-title-input').value = appState.weekTitle;
+            }
+
+            for (let line of lines) {
+                let cleanLine = line.replace(/[*_~•▪▫]/g, ' ').replace(/\s+/g, ' ').trim();
+
+                const timeRangeRegex = /\b([01]?\d|2[0-3]):([0-5]\d)\s*(?:-|–|—|עד|ל)\s*([01]?\d|2[0-3]):([0-5]\d)\b/;
+                const singleTimeRegex = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
+
+                let startTime = null;
+                let endTime = null;
+                let matchedTimeStr = '';
+
+                const rangeMatch = cleanLine.match(timeRangeRegex);
+                if (rangeMatch) {
+                    startTime = `${rangeMatch[1].padStart(2, '0')}:${rangeMatch[2]}`;
+                    endTime = `${rangeMatch[3].padStart(2, '0')}:${rangeMatch[4]}`;
+                    matchedTimeStr = rangeMatch[0];
+                } else {
+                    const singleMatch = cleanLine.match(singleTimeRegex);
+                    if (singleMatch) {
+                        startTime = `${singleMatch[1].padStart(2, '0')}:${singleMatch[2]}`;
+                        endTime = calculateDefaultEndTime(startTime);
+                        matchedTimeStr = singleMatch[0];
+                    }
+                }
+
+                let lineCohort = null;
+                if (/\b2010\b|שנתון\s*10\b|'10\b/.test(cleanLine)) {
+                    lineCohort = '2010';
+                } else if (/\b2011\b|שנתון\s*11\b|'11\b/.test(cleanLine)) {
+                    lineCohort = '2011';
+                }
+
+                const detectedDay = extractDayOfWeek(cleanLine);
+                if (detectedDay !== null) {
+                    currentDay = detectedDay;
+                }
+
+                // אם אין שעה בשורה: זוהי כותרת שנתון (כגון "2011" או "2010") או כותרת יום
+                if (!startTime) {
+                    if (lineCohort) {
+                        activeCohort = lineCohort;
+                        currentDay = null;
+                    }
+                    continue;
+                }
+
+                const cohort = lineCohort || activeCohort || '2011';
+                const sessionDay = currentDay !== null ? currentDay : 0;
+
+                let activityType = 'אימון';
+                if (/משחק|ליגה|גביע|ידידות/.test(cleanLine)) {
+                    activityType = 'משחק';
+                } else if (/כושר|אתלטיקה/.test(cleanLine)) {
+                    activityType = 'אימון כושר';
+                } else if (/שוערים/.test(cleanLine)) {
+                    activityType = 'אימון שוערים';
+                }
+
+                let location = extractLocation(cleanLine, matchedTimeStr);
+
+                parsedSessions.push({
+                    id: generateId(),
+                    day: sessionDay,
+                    startTime: startTime,
+                    endTime: endTime,
+                    cohort: cohort,
+                    location: location || 'מגרש אימונים',
+                    type: activityType,
+                    note: ''
+                });
+            }
+
+            if (parsedSessions.length === 0) {
+                showToast('לא זוהו שעות אימון בטקסט. ודאי שיש שעות בפורמט 17:30.', 'warning');
+                return;
+            }
+
+            if (append) {
+                appState.sessions = [...appState.sessions, ...parsedSessions];
+            } else {
+                appState.sessions = parsedSessions;
+            }
+
+            saveScheduleToCloud();
+            renderAll();
+            showToast(`עודכן בהצלחה! (${parsedSessions.length} מועדים נשמרו בענן)`, 'success');
+        }
+
+        function extractDayOfWeek(text) {
+            const patterns = [
+                { day: 0, regex: /(?:יום\s*)?(?:ראשון|א['׳]|א\b)/ },
+                { day: 1, regex: /(?:יום\s*)?(?:שני|ב['׳]|ב\b)/ },
+                { day: 2, regex: /(?:יום\s*)?(?:שלישי|ג['׳]|ג\b)/ },
+                { day: 3, regex: /(?:יום\s*)?(?:רביעי|ד['׳]|ד\b)/ },
+                { day: 4, regex: /(?:יום\s*)?(?:חמישי|ה['׳]|ה\b)/ },
+                { day: 5, regex: /(?:יום\s*)?(?:שישי|ו['׳]|ו\b)/ },
+                { day: 6, regex: /(?:יום\s*)?(?:שבת|מוצ"ש|ש['׳])/ }
+            ];
+
+            for (const p of patterns) {
+                if (p.regex.test(text)) {
+                    return p.day;
+                }
+            }
+            return null;
+        }
+
+        function extractLocation(line, matchedTimeStr) {
+            let loc = line;
+            loc = loc.replace(matchedTimeStr, ' ');
+            loc = loc.replace(/\b\d{1,2}[./]\d{1,2}(?:[./]\d{2,4})?\b/g, ' ');
+            loc = loc.replace(/(?:יום\s*)?(?:ראשון|שני|שלישי|רביעי|חמישי|שישי|שבת|א['׳]|ב['׳]|ג['׳]|ד['׳]|ה['׳]|ו['׳])/g, ' ');
+            loc = loc.replace(/שנתון\s*201[01]|2010|2011|'10|'11/g, ' ');
+            loc = loc.replace(/\b(?:בשעה|שעה|אימון כושר|אימון שוערים|אימון|משחק ליגה|משחק ידידות|משחק)\b/g, ' ');
+            loc = loc.replace(/^[\s\-:,|–—]+|[\s\-:,|–—]+$/g, '').replace(/\s+/g, ' ').trim();
+            
+            if (loc.startsWith('במגרש')) {
+                loc = loc.substring(1);
+            }
+            return loc;
+        }
+
+        function loadSampleText() {
+            const sample = `2011
+יום ראשון 17:30 מגרש סינטטי
+יום שלישי 18:00 אצטדיון עירוני
+יום חמישי 17:00 מגרש אימונים צפוני
+
+2010
+יום שני 19:00 מגרש סינטטי
+יום רביעי 18:30 אצטדיון עירוני
+יום שישי 14:30 משחק אימון - מגרש דרומי`;
+
+            document.getElementById('raw-text-input').value = sample;
+            parseAndBuild(false);
+        }
+
+        function clearInputText() {
+            document.getElementById('raw-text-input').value = '';
+        }
+
+        // ==========================================
+        // רינדור המערכת השבועית והממשק
+        // ==========================================
+        function renderAll() {
+            document.getElementById('display-week-title').textContent = appState.weekTitle || 'לו"ז אימונים שבועי';
+            document.getElementById('week-title-input').value = appState.weekTitle || '';
+
+            const editorPanel = document.getElementById('editor-panel');
+            const toggleText = document.getElementById('toggle-editor-text');
+            const sharedBadge = document.getElementById('shared-badge');
+
+            if (appState.isEditorVisible) {
+                editorPanel.classList.remove('hidden');
+                toggleText.textContent = 'תצוגת משפחה';
+            } else {
+                editorPanel.classList.add('hidden');
+                toggleText.textContent = 'מצב עריכה';
+            }
+
+            if (appState.isSharedView || !appState.isEditorVisible) {
+                sharedBadge.classList.remove('hidden');
+            } else {
+                sharedBadge.classList.add('hidden');
+            }
+
+            const countAll = appState.sessions.length;
+            const count2010 = appState.sessions.filter(s => s.cohort === '2010').length;
+            const count2011 = appState.sessions.filter(s => s.cohort === '2011').length;
+
+            document.getElementById('count-all').textContent = countAll;
+            document.getElementById('count-2010').textContent = count2010;
+            document.getElementById('count-2011').textContent = count2011;
+
+            updateFilterButtonsUI();
+            updateLayoutButtonsUI();
+
+            if (appState.viewLayout === 'list') {
+                document.getElementById('weekly-grid').classList.add('hidden');
+                document.getElementById('weekly-list').classList.remove('hidden');
+                document.getElementById('weekly-list').classList.add('flex');
+                renderWeeklyList();
+            } else {
+                document.getElementById('weekly-list').classList.add('hidden');
+                document.getElementById('weekly-list').classList.remove('flex');
+                document.getElementById('weekly-grid').classList.remove('hidden');
+                renderWeeklyGrid();
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function updateFilterButtonsUI() {
+            const btnAll = document.getElementById('filter-all');
+            const btn2010 = document.getElementById('filter-2010');
+            const btn2011 = document.getElementById('filter-2011');
+            if (!btnAll || !btn2010 || !btn2011) return;
+
+            btnAll.className = appState.filter === 'all'
+                ? 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white transition'
+                : 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition';
+
+            btn2010.className = appState.filter === '2010'
+                ? 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 text-white transition'
+                : 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-blue-700 hover:bg-blue-50 transition';
+
+            btn2011.className = appState.filter === '2011'
+                ? 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-orange-500 text-white transition'
+                : 'filter-btn px-3 py-1.5 rounded-lg text-xs font-bold text-orange-700 hover:bg-orange-50 transition';
+        }
+
+        function updateLayoutButtonsUI() {
+            const gridBtn = document.getElementById('layout-grid');
+            const listBtn = document.getElementById('layout-list');
+            if (!gridBtn || !listBtn) return;
+
+            if (appState.viewLayout === 'grid') {
+                gridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition flex items-center gap-1';
+                listBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-1';
+            } else {
+                listBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 text-white transition flex items-center gap-1';
+                gridBtn.className = 'px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-1';
+            }
+        }
+
+        function setViewLayout(layout) {
+            appState.viewLayout = layout;
+            renderAll();
+        }
+
+        function setFilter(filterValue) {
+            appState.filter = filterValue;
+            renderAll();
+        }
+
+        function renderWeeklyList() {
+            const listContainer = document.getElementById('weekly-list');
+            listContainer.innerHTML = '';
+
+            const filteredSessions = appState.sessions
+                .filter(s => appState.filter === 'all' || s.cohort === appState.filter)
+                .sort((a, b) => {
+                    if (Number(a.day) !== Number(b.day)) return Number(a.day) - Number(b.day);
+                    return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+                });
+
+            if (filteredSessions.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
+                        אין אימונים להצגה בסינון הנוכחי.
+                    </div>
+                `;
+                return;
+            }
+
+            filteredSessions.forEach(session => {
+                const dayObj = DAYS_HEB.find(d => d.index === Number(session.day)) || DAYS_HEB[0];
+                const arrivalTime = calculateArrivalTime(session.startTime);
+                const endTime = session.endTime || calculateDefaultEndTime(session.startTime);
+
+                let borderClass = 'border-r-4 border-r-slate-400 bg-white';
+                let badgeClass = 'bg-slate-200 text-slate-800';
+                let badgeLabel = 'כללי';
+
+                if (session.cohort === '2010') {
+                    borderClass = 'border-r-4 border-r-blue-600 bg-blue-50/40';
+                    badgeClass = 'bg-blue-600 text-white';
+                    badgeLabel = '2010';
+                } else if (session.cohort === '2011') {
+                    borderClass = 'border-r-4 border-r-orange-500 bg-orange-50/40';
+                    badgeClass = 'bg-orange-500 text-white';
+                    badgeLabel = '2011';
+                }
+
+                const row = document.createElement('div');
+                row.className = `rounded-xl p-3.5 border border-slate-200 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${borderClass}`;
+                row.innerHTML = `
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <span class="font-extrabold text-sm text-slate-900 min-w-[75px]">יום ${dayObj.name}</span>
+                        <button onclick="cycleCohort('${session.id}')" class="text-xs font-extrabold px-2.5 py-0.5 rounded-md ${badgeClass}">${badgeLabel}</button>
+                        <span class="text-xs font-bold bg-amber-100 text-amber-950 border border-amber-200 px-2.5 py-1 rounded-lg">⏰ הגעה: ${arrivalTime}</span>
+                        <span class="text-xs font-semibold text-slate-700">${escapeHtml(session.type || 'אימון')}: ${session.startTime} - ${endTime}</span>
+                    </div>
+                    <div class="flex items-center justify-between sm:justify-end gap-3">
+                        <div class="flex items-center gap-2 text-xs text-slate-700">
+                            <span class="font-semibold">📍 ${escapeHtml(session.location)}</span>
+                            ${session.note ? `<span class="bg-emerald-100 text-emerald-900 font-semibold px-2 py-0.5 rounded-md">🚗 ${escapeHtml(session.note)}</span>` : ''}
+                        </div>
+                        <div class="flex items-center gap-1 no-print">
+                            <button onclick="openEditModal('${session.id}')" class="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                            <button onclick="deleteSession('${session.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
+        }
+
+        function renderWeeklyGrid() {
+            const grid = document.getElementById('weekly-grid');
+            grid.innerHTML = '';
+
+            const filteredSessions = appState.sessions.filter(s => {
+                if (appState.filter === 'all') return true;
+                return s.cohort === appState.filter;
+            });
+
+            DAYS_HEB.forEach(dayObj => {
+                const daySessions = filteredSessions
+                    .filter(s => Number(s.day) === dayObj.index)
+                    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+                const hasSessions = daySessions.length > 0;
+
+                const dayCol = document.createElement('div');
+                dayCol.className = `flex flex-col rounded-2xl border ${hasSessions ? 'bg-white border-slate-200/90 card-shadow' : 'bg-slate-100/60 border-slate-200/50'} overflow-hidden min-h-[160px] lg:min-h-[340px]`;
+
+                const headerBg = dayObj.index === 6 
+                    ? 'bg-slate-800 text-white' 
+                    : (hasSessions ? 'bg-emerald-50/90 text-emerald-950 border-b border-emerald-100' : 'bg-slate-100 text-slate-500 border-b border-slate-200/60');
+
+                dayCol.innerHTML = `
+                    <div class="px-3.5 py-2.5 flex items-center justify-between ${headerBg}">
+                        <div class="flex items-center gap-2">
+                            <span class="font-extrabold text-base">יום ${dayObj.name}</span>
+                            ${hasSessions ? `<span class="text-xs font-bold px-2 py-0.5 rounded-full ${dayObj.index === 6 ? 'bg-white/20 text-white' : 'bg-emerald-200/70 text-emerald-900'}">${daySessions.length}</span>` : ''}
+                        </div>
+                        <button onclick="openAddModal(${dayObj.index})" title="הוסף אימון ליום ${dayObj.name}" class="no-print p-1 rounded-lg hover:bg-black/10 transition opacity-75 hover:opacity-100">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="p-2.5 flex-1 flex flex-col gap-2.5" id="day-col-${dayObj.index}">
+                        ${!hasSessions ? `
+                            <div class="flex-1 flex flex-col items-center justify-center text-center py-6 px-2 text-slate-400">
+                                <span class="text-xs">אין אימונים</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                grid.appendChild(dayCol);
+
+                const cardsContainer = dayCol.querySelector(`#day-col-${dayObj.index}`);
+                daySessions.forEach(session => {
+                    cardsContainer.appendChild(createSessionCard(session));
+                });
+            });
+        }
+
+        function createSessionCard(session) {
+            const arrivalTime = calculateArrivalTime(session.startTime);
+            const endTime = session.endTime || calculateDefaultEndTime(session.startTime);
+
+            let theme = {
+                cardBg: 'bg-slate-50',
+                border: 'border-slate-300 border-r-4 border-r-slate-500',
+                badgeBg: 'bg-slate-200 text-slate-800',
+                badgeLabel: 'כללי / משותף',
+                arrivalBg: 'bg-slate-200/70 text-slate-800',
+                iconColor: 'text-slate-600'
+            };
+
+            if (session.cohort === '2010') {
+                theme = {
+                    cardBg: 'bg-blue-50/70',
+                    border: 'border-blue-200 border-r-4 border-r-blue-600',
+                    badgeBg: 'bg-blue-600 text-white',
+                    badgeLabel: 'שנתון 2010',
+                    arrivalBg: 'bg-blue-100/90 text-blue-950 border border-blue-200',
+                    iconColor: 'text-blue-700'
+                };
+            } else if (session.cohort === '2011') {
+                theme = {
+                    cardBg: 'bg-orange-50/70',
+                    border: 'border-orange-200 border-r-4 border-r-orange-500',
+                    badgeBg: 'bg-orange-500 text-white',
+                    badgeLabel: 'שנתון 2011',
+                    arrivalBg: 'bg-orange-100/90 text-orange-950 border border-orange-200',
+                    iconColor: 'text-orange-700'
+                };
+            }
+
+            const card = document.createElement('div');
+            card.className = `training-card rounded-xl p-3 border ${theme.cardBg} ${theme.border} flex flex-col gap-2 relative group`;
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between gap-1">
+                    <button onclick="cycleCohort('${session.id}')" title="לחצי להחלפת שנתון (2010 / 2011)"
+                        class="text-[11px] font-extrabold px-2 py-0.5 rounded-md shadow-2xs transition hover:opacity-90 cursor-pointer ${theme.badgeBg}">
+                        ${theme.badgeLabel}
+                    </button>
+
+                    <div class="flex items-center gap-0.5 no-print">
+                        <button onclick="openEditModal('${session.id}')" title="ערוך פרטים" class="p-1 text-slate-500 hover:text-slate-900 hover:bg-white/80 rounded-md transition">
+                            <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <button onclick="deleteSession('${session.id}')" title="מחק אימון" class="p-1 text-slate-400 hover:text-rose-600 hover:bg-white/80 rounded-md transition">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="rounded-lg px-2.5 py-1.5 flex items-center justify-between ${theme.arrivalBg}">
+                    <span class="text-[11px] font-semibold flex items-center gap-1">
+                        <i data-lucide="alarm-clock" class="w-3.5 h-3.5 ${theme.iconColor}"></i>
+                        הגעה:
+                    </span>
+                    <span class="text-sm font-black tracking-tight">${arrivalTime}</span>
+                </div>
+
+                <div class="flex items-center justify-between text-xs text-slate-700 px-0.5">
+                    <span class="font-medium text-slate-500">${escapeHtml(session.type || 'אימון')}:</span>
+                    <span class="font-bold text-slate-900 dir-ltr">${session.startTime} - ${endTime}</span>
+                </div>
+
+                <div class="flex items-start gap-1.5 text-xs text-slate-800 bg-white/80 rounded-lg p-2 border border-slate-200/60">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5"></i>
+                    <span class="font-semibold leading-snug break-words">${escapeHtml(session.location)}</span>
+                </div>
+
+                ${session.note ? `
+                    <div class="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-900 bg-emerald-100/80 border border-emerald-200 rounded-lg px-2 py-1">
+                        <i data-lucide="car" class="w-3.5 h-3.5 text-emerald-700 shrink-0"></i>
+                        <span>${escapeHtml(session.note)}</span>
+                    </div>
+                ` : ''}
+            `;
+
+            return card;
+        }
+
+        // ==========================================
+        // פעולות ניהול ועריכה (CRUD)
+        // ==========================================
+        function cycleCohort(sessionId) {
+            const session = appState.sessions.find(s => s.id === sessionId);
+            if (!session) return;
+            const order = ['2010', '2011', 'general'];
+            const nextIdx = (order.indexOf(session.cohort) + 1) % order.length;
+            session.cohort = order[nextIdx];
+            saveScheduleToCloud();
+            renderAll();
+        }
+
+        function deleteSession(sessionId) {
+            appState.sessions = appState.sessions.filter(s => s.id !== sessionId);
+            saveScheduleToCloud();
+            renderAll();
+            showToast('האימון הוסר והלוח עודכן בענן.', 'info');
+        }
+
+        let titleSaveTimeout = null;
+        function updateWeekTitle(val) {
+            appState.weekTitle = val;
+            document.getElementById('display-week-title').textContent = val || 'לו"ז אימונים שבועי';
+            clearTimeout(titleSaveTimeout);
+            titleSaveTimeout = setTimeout(() => {
+                saveScheduleToCloud();
+            }, 500);
+        }
+
+        function toggleEditorMode() {
+            appState.isEditorVisible = !appState.isEditorVisible;
+            renderAll();
+        }
+
+        function confirmClearSchedule() {
+            if (appState.sessions.length === 0) {
+                showToast('הלוח כבר ריק.', 'info');
+                return;
+            }
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeConfirmModal() {
+            const modal = document.getElementById('confirm-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function executeClearSchedule() {
+            appState.sessions = [];
+            saveScheduleToCloud();
+            closeConfirmModal();
+            renderAll();
+            showToast('הלוח השבועי אופס בענן.', 'info');
+        }
+
+        // ==========================================
+        // ניהול מודאל הוספה ועריכה
+        // ==========================================
+        function openAddModal(defaultDay = 0) {
+            document.getElementById('modal-title').innerHTML = '<i data-lucide="calendar-plus" class="w-5 h-5 text-emerald-600"></i> הוספת אימון חדש';
+            document.getElementById('edit-id').value = '';
+            document.getElementById('edit-day').value = String(defaultDay);
+            document.getElementById('edit-cohort').value = '2010';
+            document.getElementById('edit-start').value = '17:30';
+            document.getElementById('edit-end').value = '19:00';
+            document.getElementById('edit-location').value = '';
+            document.getElementById('edit-type').value = 'אימון';
+            document.getElementById('edit-note').value = '';
+            
+            updateModalArrivalPreview();
+            showModalElement();
+        }
+
+        function openEditModal(sessionId) {
+            const session = appState.sessions.find(s => s.id === sessionId);
+            if (!session) return;
+
+            document.getElementById('modal-title').innerHTML = '<i data-lucide="edit-3" class="w-5 h-5 text-emerald-600"></i> עריכת פרטי אימון';
+            document.getElementById('edit-id').value = session.id;
+            document.getElementById('edit-day').value = String(session.day);
+            document.getElementById('edit-cohort').value = session.cohort || 'general';
+            document.getElementById('edit-start').value = session.startTime;
+            document.getElementById('edit-end').value = session.endTime || calculateDefaultEndTime(session.startTime);
+            document.getElementById('edit-location').value = session.location;
+            document.getElementById('edit-type').value = session.type || 'אימון';
+            document.getElementById('edit-note').value = session.note || '';
+
+            updateModalArrivalPreview();
+            showModalElement();
+        }
+
+        function showModalElement() {
+            const modal = document.getElementById('session-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('session-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function autoCalculateEndTime() {
+            const startVal = document.getElementById('edit-start').value;
+            if (startVal) {
+                document.getElementById('edit-end').value = calculateDefaultEndTime(startVal);
+                updateModalArrivalPreview();
+            }
+        }
+
+        function updateModalArrivalPreview() {
+            const startVal = document.getElementById('edit-start').value;
+            const previewEl = document.getElementById('modal-arrival-preview');
+            if (startVal) {
+                previewEl.textContent = calculateArrivalTime(startVal);
+            } else {
+                previewEl.textContent = '--:--';
+            }
+        }
+
+        function saveModalSession(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const sessionData = {
+                id: id || generateId(),
+                day: Number(document.getElementById('edit-day').value),
+                cohort: document.getElementById('edit-cohort').value,
+                startTime: document.getElementById('edit-start').value,
+                endTime: document.getElementById('edit-end').value,
+                location: document.getElementById('edit-location').value.trim(),
+                type: document.getElementById('edit-type').value.trim() || 'אימון',
+                note: document.getElementById('edit-note').value.trim()
+            };
+
+            if (id) {
+                const idx = appState.sessions.findIndex(s => s.id === id);
+                if (idx !== -1) appState.sessions[idx] = sessionData;
+                showToast('האימון עודכן ונשמר בענן!', 'success');
+            } else {
+                appState.sessions.push(sessionData);
+                showToast('אימון חדש נוסף ונשמר בענן!', 'success');
+            }
+
+            saveScheduleToCloud();
+            closeModal();
+            renderAll();
+        }
+
+        // ==========================================
+        // שיתוף למשפחה (קישור קבוע לענן + סיכום וואטסאפ + תמונה)
+        // ==========================================
+        function getPermanentFamilyUrl() {
+            const currentHref = window.location.href || '';
+            const isInternalPreview =
+                !currentHref ||
+                currentHref.startsWith('about:') ||
+                currentHref.startsWith('blob:') ||
+                currentHref.startsWith('file:');
+
+            if (isInternalPreview) {
+                return '';
+            }
+
+            const url = new URL(currentHref);
+            url.hash = '';
+            url.searchParams.set('view', 'family');
+            url.searchParams.set('id', scheduleDocId);
+            return url.toString();
+        }
+
+        function shareScheduleLink() {
+            const shareUrl = getPermanentFamilyUrl();
+            const modal = document.getElementById('share-modal');
+            const input = document.getElementById('share-link-input');
+            const warning = document.getElementById('share-environment-warning');
+            const nativeBtn = document.getElementById('native-share-btn');
+
+            if (!shareUrl) {
+                warning.classList.remove('hidden');
+                input.value = 'כתובת תצוגה מקדימה פנימית (לא זמינה לשיתוף חיצוני)';
+                nativeBtn.classList.add('hidden');
+                nativeBtn.classList.remove('flex');
+            } else {
+                warning.classList.add('hidden');
+                input.value = shareUrl;
+                copyTextToClipboard(shareUrl, 'הקישור למשפחה הועתק ללוח!');
+                if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+                    nativeBtn.classList.remove('hidden');
+                    nativeBtn.classList.add('flex');
+                } else {
+                    nativeBtn.classList.add('hidden');
+                    nativeBtn.classList.remove('flex');
+                }
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function copyShareModalInput() {
+            const shareUrl = getPermanentFamilyUrl();
+            if (!shareUrl) {
+                showToast('אין קישור חיצוני זמין במצב תצוגה מקדימה פנימי.', 'warning');
+                return;
+            }
+            copyTextToClipboard(shareUrl, 'הקישור הועתק בהצלחה!');
+        }
+
+        async function triggerNativeShare() {
+            const shareUrl = getPermanentFamilyUrl();
+            if (!shareUrl || typeof navigator.share !== 'function') return;
+            try {
+                await navigator.share({
+                    title: appState.weekTitle || 'לו"ז אימוני כדורגל שבועי',
+                    text: `הנה הלו"ז השבועי המעודכן: ${appState.weekTitle || ''}`,
+                    url: shareUrl
+                });
+            } catch (err) {
+                if (err && err.name !== 'AbortError') {
+                    showToast('לא ניתן היה לפתוח את תפריט השיתוף.', 'warning');
+                }
+            }
+        }
+
+        function closeShareModal() {
+            const modal = document.getElementById('share-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        async function downloadScheduleImage() {
+            const captureEl = document.getElementById('capture-area');
+            if (!captureEl || typeof html2canvas === 'undefined') {
+                showToast('כלי צילום התמונה עדיין נטען, נסי שוב בעוד רגע.', 'warning');
+                return;
+            }
+
+            showToast('מכין תמונה נקייה של הלוח השבועי...', 'info');
+            try {
+                document.querySelectorAll('.no-print').forEach(el => el.dataset.prevDisplay = el.style.display);
+                document.querySelectorAll('.no-print').forEach(el => el.style.display = 'none');
+
+                const canvas = await html2canvas(captureEl, {
+                    scale: 2,
+                    backgroundColor: '#f8fafc',
+                    useCORS: true
+                });
+
+                document.querySelectorAll('.no-print').forEach(el => el.style.display = el.dataset.prevDisplay || '');
+
+                const link = document.createElement('a');
+                link.download = `${(appState.weekTitle || 'football-schedule').replace(/[^\w\u0590-\u05FF-]+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+
+                showToast('התמונה נשמרה בהצלחה! מוכנה לשליחה בוואטסאפ.', 'success');
+            } catch (err) {
+                document.querySelectorAll('.no-print').forEach(el => el.style.display = el.dataset.prevDisplay || '');
+                console.error('שגיאה ביצירת תמונה:', err);
+                showToast('לא ניתן היה ליצור תמונה.', 'error');
+            }
+        }
+
+        function copyWhatsAppSummary() {
+            if (appState.sessions.length === 0) {
+                showToast('אין אימונים להעתקה.', 'warning');
+                return;
+            }
+
+            let lines = [];
+            lines.push(`⚽ *${appState.weekTitle || 'לו"ז אימוני כדורגל שבועי'}* ⚽`);
+            lines.push(`🔵 שנתון 2010  |  🟠 שנתון 2011`);
+            lines.push(`--------------------------------`);
+
+            DAYS_HEB.forEach(dayObj => {
+                const daySessions = appState.sessions
+                    .filter(s => Number(s.day) === dayObj.index)
+                    .sort((a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime));
+
+                if (daySessions.length > 0) {
+                    lines.push(`\n📅 *יום ${dayObj.name}:*`);
+                    daySessions.forEach(s => {
+                        const icon = s.cohort === '2010' ? '🔵' : (s.cohort === '2011' ? '🟠' : '⚪');
+                        const cohortTxt = s.cohort === 'general' ? 'כללי' : s.cohort;
+                        const arrival = calculateArrivalTime(s.startTime);
+                        const end = s.endTime || calculateDefaultEndTime(s.startTime);
+                        let row = `${icon} *[${cohortTxt}]* ${s.type} ${s.startTime}-${end} (⏰ *הגעה: ${arrival}*) 📍 ${s.location}`;
+                        if (s.note) row += ` | 🚗 ${s.note}`;
+                        lines.push(row);
+                    });
+                }
+            });
+
+            const shareUrl = getPermanentFamilyUrl();
+            if (shareUrl) {
+                lines.push(`\n🔗 לצפייה בלוח המלא והמעודכן:\n${shareUrl}`);
+            }
+
+            copyTextToClipboard(lines.join('\n'), 'סיכום הלו"ז עם האימוג׳ים הועתק! מוכן להדבקה בוואטסאפ.');
+        }
+
+        // חשיפת פונקציות ל-window עבור אירועי onclick ב-HTML
+        window.parseAndBuild = parseAndBuild;
+        window.loadSampleText = loadSampleText;
+        window.clearInputText = clearInputText;
+        window.updateWeekTitle = updateWeekTitle;
+        window.updateScheduleDocId = updateScheduleDocId;
+        window.toggleEditorMode = toggleEditorMode;
+        window.setFilter = setFilter;
+        window.setViewLayout = setViewLayout;
+        window.cycleCohort = cycleCohort;
+        window.deleteSession = deleteSession;
+        window.openAddModal = openAddModal;
+        window.openEditModal = openEditModal;
+        window.closeModal = closeModal;
+        window.autoCalculateEndTime = autoCalculateEndTime;
+        window.saveModalSession = saveModalSession;
+        window.confirmClearSchedule = confirmClearSchedule;
+        window.closeConfirmModal = closeConfirmModal;
+        window.executeClearSchedule = executeClearSchedule;
+        window.shareScheduleLink = shareScheduleLink;
+        window.copyShareModalInput = copyShareModalInput;
+        window.triggerNativeShare = triggerNativeShare;
+        window.closeShareModal = closeShareModal;
+        window.copyWhatsAppSummary = copyWhatsAppSummary;
+        window.downloadScheduleImage = downloadScheduleImage;
+
+        // ==========================================
+        // כלי עזר (Clipboard, Toast, IDs)
+        // ==========================================
+        function copyTextToClipboard(text, successMessage) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.top = '-9999px';
+            textArea.style.left = '-9999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMessage, 'success');
+                } else {
+                    showToast('לא ניתן היה להעתיק אוטומטית.', 'error');
+                }
+            } catch (err) {
+                showToast('שגיאה בהעתקה ללוח.', 'error');
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            const styles = {
+                success: 'bg-emerald-900 text-white border-emerald-700',
+                warning: 'bg-amber-800 text-white border-amber-600',
+                error: 'bg-rose-900 text-white border-rose-700',
+                info: 'bg-slate-800 text-white border-slate-700'
+            };
+
+            const icons = {
+                success: 'check-circle-2',
+                warning: 'alert-circle',
+                error: 'x-circle',
+                info: 'info'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-xl border text-sm font-medium transition-all duration-300 transform translate-y-2 opacity-0 ${styles[type] || styles.info}`;
+            toast.innerHTML = `
+                <i data-lucide="${icons[type] || 'info'}" class="w-5 h-5 shrink-0"></i>
+                <span>${escapeHtml(message)}</span>
+            `;
+
+            container.appendChild(toast);
+            if (window.lucide) lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function generateId() {
+            return 'id_' + Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>
